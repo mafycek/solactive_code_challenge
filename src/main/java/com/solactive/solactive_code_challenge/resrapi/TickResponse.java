@@ -42,13 +42,21 @@ public class TickResponse {
                 // create a new datastructure and add dataset
                 instrument = this.tickStorageContainer.createNewInstrument(incommingTick.getInstrument());
             }
-            instrument.addTick(incommingTick.getTimestamp(), incommingTick.getPrice());
 
-            // removing ticks older than time horizon
-            instrument.getTickInWindow(actualTimestamp, time_horizon);
+            try {
+                // lock operation on the instance
+                instrument.getMutex().lock();
 
-            // trigger recalculation
-            instrument.recalculationVariables();
+                instrument.addTick(incommingTick.getTimestamp(), incommingTick.getPrice());
+
+                // removing ticks older than time horizon
+                instrument.getTickInWindow(actualTimestamp, time_horizon);
+
+                // trigger recalculation
+                instrument.recalculationVariables();
+            } finally {
+                instrument.getMutex().unlock();
+            }
 
             return new ResponseEntity<>("Tick added.", HttpStatus.CREATED);
         } else {

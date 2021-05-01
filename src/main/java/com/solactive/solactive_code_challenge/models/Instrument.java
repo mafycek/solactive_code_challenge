@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Instrument {
 
     @Value("${solactive.lambda}")
     private Long lambda;
+
+    private ReentrantLock mutex = new ReentrantLock();
 
     String name;
 
@@ -36,16 +39,22 @@ public class Instrument {
 
     public InstrumentStatistics getStatistics() {
         InstrumentStatistics statistics = new InstrumentStatistics();
-        statistics.setAverage(average);
-        statistics.setCount(count);
-        statistics.setMaximum(maximum);
-        statistics.setMinimum(minimum);
-        statistics.setQuantile_5(quantile_5);
-        statistics.setVolatility(volatility);
-        statistics.setMaximalDrawdown(maximalDrawdown);
-        statistics.setTimeWeightedAverage(timeWeightedAverage);
-        statistics.setTimeExponentiallyWeightedAverage(timeExponentiallyWeightedAverage);
-        return statistics;
+        try {
+            this.getMutex().lock();
+
+            statistics.setAverage(average);
+            statistics.setCount(count);
+            statistics.setMaximum(maximum);
+            statistics.setMinimum(minimum);
+            statistics.setQuantile_5(quantile_5);
+            statistics.setVolatility(volatility);
+            statistics.setMaximalDrawdown(maximalDrawdown);
+            statistics.setTimeWeightedAverage(timeWeightedAverage);
+            statistics.setTimeExponentiallyWeightedAverage(timeExponentiallyWeightedAverage);
+            return statistics;
+        } finally {
+            this.getMutex().unlock();
+        }
     }
 
     Instrument(String name) {
@@ -105,5 +114,9 @@ public class Instrument {
         this.quantile_5 = QuantileCalculator.calculate(this.ticks, 0.05);
         this.timeWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, timeAverage, average);
         this.timeExponentiallyWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, exponentialDecay, average);
+    }
+
+    public ReentrantLock getMutex() {
+        return mutex;
     }
 }
