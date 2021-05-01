@@ -21,6 +21,9 @@ public class TickResponse {
     @Value("${solactive.time_horizon}")
     private Long time_horizon;
 
+    @Value("${solactive.lambda}")
+    private Double lambdaExponentialDecay;
+
     TickStorageContainer tickStorageContainer;
 
     public TickResponse() {
@@ -40,7 +43,7 @@ public class TickResponse {
 
             } else {
                 // create a new datastructure and add dataset
-                instrument = this.tickStorageContainer.createNewInstrument(incommingTick.getInstrument());
+                instrument = this.tickStorageContainer.createNewInstrument(incommingTick.getInstrument(), this.lambdaExponentialDecay);
             }
 
             try {

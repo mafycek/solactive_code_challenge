@@ -8,10 +8,7 @@ public class PositionIndependentAverageCalculator {
     public static Double calculate(TreeMap<Long, Double> ticks, SingleArgumentFunc averageFunc) {
         Double average = 0.0;
         for(Map.Entry<Long, Double> entry: ticks.entrySet()) {
-            Map.Entry<Long, Double> previousEntry = ticks.lowerEntry(entry.getKey());
-            if (previousEntry != null) {
-                average += averageFunc.function(entry.getValue());
-            }
+            average += averageFunc.function(entry.getValue());
         }
         return average / ticks.size();
     }

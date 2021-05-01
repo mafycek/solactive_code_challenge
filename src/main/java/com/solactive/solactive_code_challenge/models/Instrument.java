@@ -17,6 +17,8 @@ public class Instrument {
 
     String name;
 
+    Double lambdaExponentialDecay;
+
     TreeMap<Long, Double> ticks = new TreeMap<Long, Double>();
 
     private Double average = Double.NaN;
@@ -57,8 +59,9 @@ public class Instrument {
         }
     }
 
-    Instrument(String name) {
+    Instrument(String name, Double lambdaExponentialDecay) {
         this.name = name;
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
     }
 
     public void addTick(Long timestep, Double price) {
@@ -98,11 +101,14 @@ public class Instrument {
         };
 
         LongWeightFunc timeAverage = (value1, value2) -> {
-            return Double.longBitsToDouble (value1-value2);
+            Double distance = Double.valueOf(value2-value1);
+            return distance;
+
         };
 
         LongWeightFunc exponentialDecay = (value1, value2) -> {
-            return Math.exp(-Double.longBitsToDouble (value1-value2) * lambda);
+            Double distance = Double.valueOf(value2-value1);
+            return Math.exp(-distance * this.lambdaExponentialDecay);
         };
 
         this.maximum = ExtremumCalculator.calculate(this.ticks, max);

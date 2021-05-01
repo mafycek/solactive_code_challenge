@@ -19,8 +19,8 @@ public class TickStorageContainer {
         return dataTicks.get(instrumentId);
     }
 
-    public Instrument createNewInstrument(String instrumentId) {
-        Instrument instrument = new Instrument(instrumentId);
+    public Instrument createNewInstrument(String instrumentId, Double lambdaExponentialDecay) {
+        Instrument instrument = new Instrument(instrumentId, lambdaExponentialDecay);
         dataTicks.put(instrumentId, instrument);
         return instrument;
     }
