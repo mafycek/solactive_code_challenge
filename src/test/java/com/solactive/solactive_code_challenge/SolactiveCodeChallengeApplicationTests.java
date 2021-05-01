@@ -38,7 +38,8 @@ class SolactiveCodeChallengeApplicationTests {
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
 		Assert.isTrue(0L == instrumentStatisticsABC.getCount(), "Count");
 
-		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, 1L);
+		Long actualTimestamp = System.currentTimeMillis();
+		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
 		instrumentStatisticsABC = this.tickResponse.statistics("ABC");

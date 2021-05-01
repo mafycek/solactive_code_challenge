@@ -1,11 +1,12 @@
 package com.solactive.solactive_code_challenge.models;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class TickStorageContainer {
 
-    HashMap<String, Instrument> dataTicks = new HashMap<String, Instrument>();
+    Map<String, Instrument> dataTicks = new HashMap<String, Instrument>();
 
     public TickStorageContainer() {
     }
@@ -18,7 +19,14 @@ public class TickStorageContainer {
         return dataTicks.get(instrumentId);
     }
 
+    public Instrument createNewInstrument(String instrumentId) {
+        Instrument instrument = new Instrument(instrumentId);
+        dataTicks.put(instrumentId, instrument);
+        return instrument;
+    }
+
     public Set<String> getAllInstruments() {
         return dataTicks.keySet();
     }
+
 }

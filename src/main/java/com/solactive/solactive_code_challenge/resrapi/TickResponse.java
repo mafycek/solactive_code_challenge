@@ -18,8 +18,8 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/")
 public class TickResponse {
-    @Value("${solactive.time_horizont}")
-    private Long time_horizont;
+    @Value("${solactive.time_horizon}")
+    private Long time_horizon;
 
     TickStorageContainer tickStorageContainer;
 
@@ -31,12 +31,24 @@ public class TickResponse {
     public ResponseEntity<String> processTick(@RequestBody IncommingTick incommingTick) {
         // actual timestamp
         Long actualTimestamp = System.currentTimeMillis();
-        if (actualTimestamp - incommingTick.getTimestamp() < time_horizont) {
+        if (actualTimestamp - incommingTick.getTimestamp() < time_horizon) {
             // incomming tick can be accepted
+            Instrument instrument;
             if (this.tickStorageContainer.doExistInstrument(incommingTick.getInstrument())) {
-                Instrument instrument = this.tickStorageContainer.getInstrument(incommingTick.getInstrument());
+                // search for existing datastructure
+                instrument = this.tickStorageContainer.getInstrument(incommingTick.getInstrument());
 
+            } else {
+                // create a new datastructure and add dataset
+                instrument = this.tickStorageContainer.createNewInstrument(incommingTick.getInstrument());
             }
+            instrument.addTick(incommingTick.getTimestamp(), incommingTick.getPrice());
+
+            // removing ticks older than time horizon
+            instrument.getTickInWindow(actualTimestamp, time_horizon);
+
+            // trigger recalculation
+            instrument.recalculationVariables();
 
             return new ResponseEntity<>("Tick added.", HttpStatus.CREATED);
         } else {
