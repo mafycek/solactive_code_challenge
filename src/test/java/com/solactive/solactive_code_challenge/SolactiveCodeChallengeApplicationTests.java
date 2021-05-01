@@ -32,7 +32,7 @@ class SolactiveCodeChallengeApplicationTests {
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getMinimum()) == 0, "Minimum");
-		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getQuantile_95()) == 0, "Quantile");
+		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
@@ -47,9 +47,9 @@ class SolactiveCodeChallengeApplicationTests {
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
 		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
 		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getMinimum()) == 0, "Minimum");
-		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getQuantile_95()) == 0, "Quantile");
-		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
-		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
+		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
 		Assert.isTrue(1L == instrumentStatisticsABC.getCount(), "Count");
 
@@ -58,7 +58,7 @@ class SolactiveCodeChallengeApplicationTests {
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getMaximalDrawdown()) == 0, "Maximal drawdown");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getMaximum()) == 0, "Maximum");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getMinimum()) == 0, "Minimum");
-		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getQuantile_95()) == 0, "Quantile");
+		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getQuantile_5()) == 0, "Quantile");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getTimeWeightedAverage()) == 0, "Time weighted average");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsDEF.getVolatility()) == 0, "Volatility");

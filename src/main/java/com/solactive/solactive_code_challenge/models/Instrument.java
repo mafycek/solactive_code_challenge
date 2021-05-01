@@ -1,17 +1,20 @@
 package com.solactive.solactive_code_challenge.models;
 
-import com.solactive.solactive_code_challenge.calculators.DoubleArgumentFunc;
-import com.solactive.solactive_code_challenge.calculators.MaximumCalculator;
+import com.solactive.solactive_code_challenge.calculators.*;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
+import org.springframework.beans.factory.annotation.Value;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Instrument {
 
+    @Value("${solactive.lambda}")
+    private Long lambda;
+
     String name;
 
-    Map<Long, Double> ticks = new HashMap<Long, Double>();
+    TreeMap<Long, Double> ticks = new TreeMap<Long, Double>();
 
     private Double average = Double.NaN;
 
@@ -23,7 +26,7 @@ public class Instrument {
 
     private Double volatility = Double.NaN;
 
-    private Double quantile_95 = Double.NaN;
+    private Double quantile_5 = Double.NaN;
 
     private Double timeWeightedAverage = Double.NaN;
 
@@ -37,7 +40,7 @@ public class Instrument {
         statistics.setCount(count);
         statistics.setMaximum(maximum);
         statistics.setMinimum(minimum);
-        statistics.setQuantile_95(quantile_95);
+        statistics.setQuantile_5(quantile_5);
         statistics.setVolatility(volatility);
         statistics.setMaximalDrawdown(maximalDrawdown);
         statistics.setTimeWeightedAverage(timeWeightedAverage);
@@ -77,8 +80,30 @@ public class Instrument {
                 return value1 > value2;
             }
         };
+        SingleArgumentFunc sqr = (value) -> {
+            return value*value;
+        };
 
-        this.maximum = MaximumCalculator.calculate(this.ticks, max);
-        this.minimum = MaximumCalculator.calculate(this.ticks, min);
+        SingleArgumentFunc average = (value) -> {
+            return value;
+        };
+
+        LongWeightFunc timeAverage = (value1, value2) -> {
+            return Double.longBitsToDouble (value1-value2);
+        };
+
+        LongWeightFunc exponentialDecay = (value1, value2) -> {
+            return Math.exp(-Double.longBitsToDouble (value1-value2) * lambda);
+        };
+
+        this.maximum = ExtremumCalculator.calculate(this.ticks, max);
+        this.minimum = ExtremumCalculator.calculate(this.ticks, min);
+        this.count = Long.valueOf(this.ticks.size());
+        this.average = AverageCalculators.calculate(this.ticks);
+        this.volatility = Math.sqrt(PositionIndependentAverageCalculator.calculate(this.ticks, sqr) - this.average * this.average);
+        this.maximalDrawdown = MaximalDrawdown.calculate(this.ticks);
+        this.quantile_5 = QuantileCalculator.calculate(this.ticks, 0.05);
+        this.timeWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, timeAverage, average);
+        this.timeExponentiallyWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, exponentialDecay, average);
     }
 }

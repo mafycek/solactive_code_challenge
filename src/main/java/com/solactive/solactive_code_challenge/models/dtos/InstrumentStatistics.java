@@ -14,7 +14,7 @@ public class InstrumentStatistics {
 
     @JsonProperty("volatility") private Double volatility = Double.NaN;
 
-    @JsonProperty("quantile") private Double quantile_95 = Double.NaN;
+    @JsonProperty("quantile") private Double quantile_5 = Double.NaN;
 
     @JsonProperty("twap") private Double timeWeightedAverage = Double.NaN;
 
@@ -44,8 +44,8 @@ public class InstrumentStatistics {
         this.minimum = minimum;
     }
 
-    public void setQuantile_95(Double quantile_95) {
-        this.quantile_95 = quantile_95;
+    public void setQuantile_5(Double quantile_5) {
+        this.quantile_5 = quantile_5;
     }
 
     public void setTimeExponentiallyWeightedAverage(Double timeExponentiallyWeightedAverage) {
@@ -76,8 +76,8 @@ public class InstrumentStatistics {
         return minimum;
     }
 
-    public Double getQuantile_95() {
-        return quantile_95;
+    public Double getQuantile_5() {
+        return quantile_5;
     }
 
     public Double getTimeExponentiallyWeightedAverage() {
@@ -95,5 +95,4 @@ public class InstrumentStatistics {
     public Long getCount() {
         return count;
     }
-
 }
