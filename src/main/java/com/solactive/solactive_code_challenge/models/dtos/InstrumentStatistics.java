@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InstrumentStatistics {
 
+    @JsonProperty("instrument") private String Instrument;
+
     @JsonProperty("avr") private Double average = Double.NaN;
 
     @JsonProperty("max") private Double maximum = Double.NaN;
@@ -24,6 +26,9 @@ public class InstrumentStatistics {
 
     /* etc. */
 
+    public void setInstrument(String instrument) {
+        Instrument = instrument;
+    }
     public void setAverage(Double average) {
         this.average = average;
     }
@@ -94,5 +99,9 @@ public class InstrumentStatistics {
 
     public Long getCount() {
         return count;
+    }
+
+    public String getInstrument() {
+        return Instrument;
     }
 }

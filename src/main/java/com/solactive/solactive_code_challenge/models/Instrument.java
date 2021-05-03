@@ -10,49 +10,25 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Instrument {
 
-    @Value("${solactive.lambda}")
-    private Long lambda;
-
     private ReentrantLock mutex = new ReentrantLock();
 
     String name;
 
+    @Value("${solactive.lambda}")
     Double lambdaExponentialDecay;
 
     TreeMap<Long, Double> ticks = new TreeMap<Long, Double>();
 
-    private Double average = Double.NaN;
+    TreeMap<Long, StatisticsOfInstrument> statisticsCache = new TreeMap<Long, StatisticsOfInstrument>();
 
-    private Double maximum = Double.NaN;
-
-    private Double minimum = Double.NaN;
-
-    private Double maximalDrawdown = Double.NaN;
-
-    private Double volatility = Double.NaN;
-
-    private Double quantile_5 = Double.NaN;
-
-    private Double timeWeightedAverage = Double.NaN;
-
-    private Double timeExponentiallyWeightedAverage = Double.NaN;
-
-    private Long count = 0L;
-
-    public InstrumentStatistics getStatistics() {
-        InstrumentStatistics statistics = new InstrumentStatistics();
+    public InstrumentStatistics getStatistics(Long actualTimestamp) {
         try {
             this.getMutex().lock();
 
-            statistics.setAverage(average);
-            statistics.setCount(count);
-            statistics.setMaximum(maximum);
-            statistics.setMinimum(minimum);
-            statistics.setQuantile_5(quantile_5);
-            statistics.setVolatility(volatility);
-            statistics.setMaximalDrawdown(maximalDrawdown);
-            statistics.setTimeWeightedAverage(timeWeightedAverage);
-            statistics.setTimeExponentiallyWeightedAverage(timeExponentiallyWeightedAverage);
+            Map.Entry<Long, StatisticsOfInstrument> previousEntry = this.statisticsCache.lowerEntry(actualTimestamp);
+            InstrumentStatistics statistics = previousEntry.getValue().getStatistics();
+            statistics.setInstrument(name);
+
             return statistics;
         } finally {
             this.getMutex().unlock();
@@ -111,15 +87,18 @@ public class Instrument {
             return Math.exp(-distance * this.lambdaExponentialDecay);
         };
 
-        this.maximum = ExtremumCalculator.calculate(this.ticks, max);
-        this.minimum = ExtremumCalculator.calculate(this.ticks, min);
-        this.count = Long.valueOf(this.ticks.size());
-        this.average = AverageCalculators.calculate(this.ticks);
-        this.volatility = Math.sqrt(PositionIndependentAverageCalculator.calculate(this.ticks, sqr) - this.average * this.average);
-        this.maximalDrawdown = MaximalDrawdown.calculate(this.ticks);
-        this.quantile_5 = QuantileCalculator.calculate(this.ticks, 0.05);
-        this.timeWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, timeAverage, average);
-        this.timeExponentiallyWeightedAverage = WeightedGeneralizedAverageCalculator.calculate(this.ticks, exponentialDecay, average);
+        StatisticsOfInstrument statistics = new StatisticsOfInstrument();
+        statistics.setMaximum(ExtremumCalculator.calculate(this.ticks, max));
+        statistics.setMinimum(ExtremumCalculator.calculate(this.ticks, min));
+        statistics.setCount(Long.valueOf(this.ticks.size()));
+        statistics.setAverage(AverageCalculators.calculate(this.ticks));
+        statistics.setVolatility(Math.sqrt(PositionIndependentAverageCalculator.calculate(this.ticks, sqr) - statistics.getAverage() * statistics.getAverage()));
+        statistics.setMaximalDrawdown(MaximalDrawdown.calculate(this.ticks));
+        statistics.setQuantile_5(QuantileCalculator.calculate(this.ticks, 0.05));
+        statistics.setTimeWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(this.ticks, timeAverage, average));
+        statistics.setTimeExponentiallyWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(this.ticks, exponentialDecay, average));
+
+        statisticsCache.put(0L , statistics);
     }
 
     public ReentrantLock getMutex() {

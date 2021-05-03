@@ -18,10 +18,10 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/")
 public class TickResponse {
-    @Value("${solactive.time_horizon}")
+    @Value("${solactive.time_horizon:60000}")
     private Long time_horizon;
 
-    @Value("${solactive.lambda}")
+    @Value("${solactive.lambda:1}")
     private Double lambdaExponentialDecay;
 
     TickStorageContainer tickStorageContainer;
@@ -29,6 +29,7 @@ public class TickResponse {
     public TickResponse() {
         this.tickStorageContainer = new TickStorageContainer();
     }
+
 
     @PostMapping("/ticks")
     public ResponseEntity<String> processTick(@RequestBody IncommingTick incommingTick) {
@@ -70,10 +71,13 @@ public class TickResponse {
 
     @PostMapping("/statistics/{instrument}")
     public InstrumentStatistics statistics(String instrumentId) {
+        // actual timestamp
+        Long actualTimestamp = System.currentTimeMillis();
+
         if (this.tickStorageContainer.doExistInstrument(instrumentId)) {
             // instrument exists in datastructure
             Instrument instrument = this.tickStorageContainer.getInstrument(instrumentId);
-            InstrumentStatistics statistics = instrument.getStatistics();
+            InstrumentStatistics statistics = instrument.getStatistics(actualTimestamp);
             return statistics;
         } else {
             // instrument does not exist in datastructure
@@ -84,12 +88,32 @@ public class TickResponse {
 
     @PostMapping("/statistics")
     public ArrayList<InstrumentStatistics> completeStatistics() {
+        // actual timestamp
+        Long actualTimestamp = System.currentTimeMillis();
+
         ArrayList<InstrumentStatistics> statistics = new ArrayList<InstrumentStatistics>();
         for (String instrumentId: this.tickStorageContainer.getAllInstruments()) {
             Instrument instrument = this.tickStorageContainer.getInstrument(instrumentId);
-            InstrumentStatistics instrumentStatistics = instrument.getStatistics();
+            InstrumentStatistics instrumentStatistics = instrument.getStatistics(actualTimestamp);
             statistics.add(instrumentStatistics);
         }
         return statistics;
     }
+
+    public void setTimeHorizon(Long time_horizon) {
+        this.time_horizon = time_horizon;
+    }
+
+    public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
+    }
+
+    public Long getTimeHorizon() {
+        return time_horizon;
+    }
+
+    public Double getLambdaExponentialDecay() {
+        return lambdaExponentialDecay;
+    }
+
 }
