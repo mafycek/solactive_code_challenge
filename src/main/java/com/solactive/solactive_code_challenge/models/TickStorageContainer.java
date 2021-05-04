@@ -2,6 +2,7 @@ package com.solactive.solactive_code_challenge.models;
 
 import com.solactive.solactive_code_challenge.models.dtos.IncommingTick;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
+import com.solactive.solactive_code_challenge.resrapi.TickResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,14 +10,12 @@ import java.util.Set;
 
 public class TickStorageContainer {
 
-    private Long time_horizon;
-    private Double lambdaExponentialDecay;
+    TickResponse timeResponse;
 
     Map<String, Instrument> dataTicks = new HashMap<String, Instrument>();
 
-    public TickStorageContainer(Long time_horizon, Double lambdaExponentialDecay) {
-        this.time_horizon = time_horizon;
-        this.lambdaExponentialDecay = lambdaExponentialDecay;
+    public TickStorageContainer(TickResponse timeResponse) {
+        this.timeResponse = timeResponse;
     }
 
     public Boolean doExistInstrument(String instrumentId) {
@@ -72,10 +71,10 @@ public class TickStorageContainer {
     }
 
     public Double getLambdaExponentialDecay() {
-        return lambdaExponentialDecay;
+        return this.timeResponse.getLambdaExponentialDecay();
     }
 
     public Long getTimeHorizon() {
-        return time_horizon;
+        return this.timeResponse.getTimeHorizon();
     }
 }

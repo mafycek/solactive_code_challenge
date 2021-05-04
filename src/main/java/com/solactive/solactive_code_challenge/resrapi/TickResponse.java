@@ -7,10 +7,7 @@ import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
@@ -27,13 +24,13 @@ public class TickResponse {
     private Double lambdaExponentialDecay;
 
     public TickResponse() {
-        this.tickStorageContainer = new TickStorageContainer(this.time_horizon, this.lambdaExponentialDecay);
+        this.tickStorageContainer = new TickStorageContainer(this);
     }
 
     public TickResponse(Long time_horizon, Double lambdaExponentialDecay) {
         this.time_horizon = time_horizon;
         this.lambdaExponentialDecay = lambdaExponentialDecay;
-        this.tickStorageContainer = new TickStorageContainer(time_horizon, lambdaExponentialDecay);
+        this.tickStorageContainer = new TickStorageContainer(this);
     }
 
     @PostMapping("/ticks")
@@ -52,8 +49,8 @@ public class TickResponse {
         }
     }
 
-    @PostMapping("/statistics/{instrument}")
-    public InstrumentStatistics statistics(String instrumentId) {
+    @GetMapping("/statistics/{instrumentId}")
+    public InstrumentStatistics statistics(@PathVariable("instrumentId") String instrumentId) {
         // actual timestamp
         Long actualTimestamp = System.currentTimeMillis();
 
@@ -67,7 +64,7 @@ public class TickResponse {
         }
     }
 
-    @PostMapping("/statistics")
+    @GetMapping("/statistics")
     public ArrayList<InstrumentStatistics> completeStatistics() {
         // actual timestamp
         Long actualTimestamp = System.currentTimeMillis();
