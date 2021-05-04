@@ -3,11 +3,10 @@ package com.solactive.solactive_code_challenge.models;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
 import org.testng.internal.collections.Pair;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.SortedMap;
 
 public class StatisticsOfInstrument {
-    TreeMap<Long, Double> ticks;
+    SortedMap<Long, Double> ticks;
 
     private Double lambdaExponentialDecay;
 
@@ -21,7 +20,7 @@ public class StatisticsOfInstrument {
     private Pair<Double, Double> timeExponentiallyWeightedAverage = new Pair(0.0, 0.0);
     private Long count = 0L;
 
-    StatisticsOfInstrument(TreeMap<Long, Double> ticks, Double lambdaExponentialDecay) {
+    StatisticsOfInstrument(SortedMap<Long, Double> ticks, Double lambdaExponentialDecay) {
         this.ticks = ticks;
         this.lambdaExponentialDecay = lambdaExponentialDecay;
     }
@@ -100,24 +99,30 @@ public class StatisticsOfInstrument {
 
     InstrumentStatistics getStatistics(Long actualTimestamp) {
         InstrumentStatistics statistics = new InstrumentStatistics();
+        if (this.ticks.size() == 0)
+        {
+            return statistics;
+        }
+        else {
+            Long lastKey = this.ticks.lastKey();
+            Double lastValue = this.ticks.get(lastKey);
+            Long timeWeight = (actualTimestamp - lastKey);
+            Double compensationToTimeWeightedAverage = timeWeight * lastValue;
+            Double timeExponentialWeight = Math.exp(-getLambdaExponentialDecay() * timeWeight);
+            Double compensationToTimeExponentialWeightedAverage = timeExponentialWeight * lastValue;
 
-        Map.Entry<Long, Double> lastEntry = this.ticks.lastEntry();
-        Long timeWeight = (actualTimestamp - lastEntry.getKey());
-        Double compensationToTimeWeightedAverage = timeWeight * lastEntry.getValue();
-        Double timeExponentialWeight = Math.exp(-getLambdaExponentialDecay()* timeWeight);
-        Double compensationToTimeExponentialWeightedAverage = timeExponentialWeight * lastEntry.getValue();
+            statistics.setAverage(average);
+            statistics.setCount(count);
+            statistics.setMaximum(maximum);
+            statistics.setMinimum(minimum);
+            statistics.setQuantile_5(quantile_5);
+            statistics.setVolatility(volatility);
+            statistics.setMaximalDrawdown(maximalDrawdown);
+            statistics.setTimeWeightedAverage((getTimeWeightedAverage().first() + compensationToTimeWeightedAverage) / (getTimeWeightedAverage().second() + timeWeight));
+            statistics.setTimeExponentiallyWeightedAverage((getTimeExponentiallyWeightedAverage().first() + compensationToTimeExponentialWeightedAverage) / (getTimeExponentiallyWeightedAverage().second() + timeExponentialWeight));
 
-        statistics.setAverage(average);
-        statistics.setCount(count);
-        statistics.setMaximum(maximum);
-        statistics.setMinimum(minimum);
-        statistics.setQuantile_5(quantile_5);
-        statistics.setVolatility(volatility);
-        statistics.setMaximalDrawdown(maximalDrawdown);
-        statistics.setTimeWeightedAverage((getTimeWeightedAverage().first()+compensationToTimeWeightedAverage) / (getTimeWeightedAverage().second()+timeWeight));
-        statistics.setTimeExponentiallyWeightedAverage((getTimeExponentiallyWeightedAverage().first()+compensationToTimeExponentialWeightedAverage) / (getTimeExponentiallyWeightedAverage().second()+timeExponentialWeight));
-
-        return statistics;
+            return statistics;
+        }
     }
 
     public Double getLambdaExponentialDecay() {

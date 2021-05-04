@@ -28,7 +28,7 @@ public class TickStorageContainer {
     }
 
     public Instrument createNewInstrument(String instrumentId) {
-        Instrument instrument = new Instrument(instrumentId, getLambdaExponentialDecay());
+        Instrument instrument = new Instrument(instrumentId, getTimeHorizon(), getLambdaExponentialDecay());
         dataTicks.put(instrumentId, instrument);
         return instrument;
     }
@@ -62,7 +62,7 @@ public class TickStorageContainer {
 
             // removing ticks older than time horizon
             Map.Entry<Long, Double> lastEntry = instrument.getTicks().lastEntry();
-            instrument.getTickInWindow(lastEntry.getKey(), 600000L ); //TickResponse.time_horizon
+            instrument.getTickInWindow(lastEntry.getKey(), getTimeHorizon());
 
             // trigger recalculation
             instrument.recalculationVariables();
@@ -73,5 +73,9 @@ public class TickStorageContainer {
 
     public Double getLambdaExponentialDecay() {
         return lambdaExponentialDecay;
+    }
+
+    public Long getTimeHorizon() {
+        return time_horizon;
     }
 }

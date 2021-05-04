@@ -4,19 +4,16 @@ import com.solactive.solactive_code_challenge.calculators.*;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
 
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Instrument {
-
     private ReentrantLock mutex = new ReentrantLock();
-
     private String name;
-
+    private Long time_horizon;
     private Double lambdaExponentialDecay;
-
     TreeMap<Long, Double> ticks = new TreeMap<Long, Double>();
-
     TreeMap<Long, StatisticsOfInstrument> statisticsCache = new TreeMap<Long, StatisticsOfInstrument>();
 
     public InstrumentStatistics getStatistics(Long actualTimestamp) {
@@ -33,9 +30,10 @@ public class Instrument {
         }
     }
 
-    Instrument(String name, Double lambdaExponentialDecay) {
+    Instrument(String name, Long time_horizon, Double lambdaExponentialDecay) {
         this.name = name;
         this.lambdaExponentialDecay = lambdaExponentialDecay;
+        this.time_horizon = time_horizon;
     }
 
     public void addTick(Long timestep, Double price) {
@@ -52,6 +50,22 @@ public class Instrument {
     }
 
     public void recalculationVariables() {
+        this.statisticsCache = new TreeMap<Long, StatisticsOfInstrument>();
+
+        // add here history cache
+        StatisticsOfInstrument statistics = CalculateVariables(this.ticks);
+        this.statisticsCache.put(this.ticks.lastKey(), statistics);
+
+        for (Long key : this.ticks.keySet())
+        {
+            SortedMap<Long, Double> submap = this.ticks.tailMap(key + 1);
+            TreeMap<Long, Double> subtreemap = new TreeMap<Long, Double>(submap);
+            statistics = CalculateVariables(subtreemap);
+            this.statisticsCache.put(key + getTimeHorizon() + 1 , statistics);
+        }
+    }
+
+    StatisticsOfInstrument CalculateVariables(TreeMap<Long, Double> ticks) {
         DoubleArgumentFunc max = (value1, value2) -> {
             if (value1.isNaN()) {
                 return true;
@@ -85,20 +99,18 @@ public class Instrument {
             return Math.exp(-distance * this.lambdaExponentialDecay);
         };
 
-        // add here history cache
-
         StatisticsOfInstrument statistics = new StatisticsOfInstrument(ticks, getLambdaExponentialDecay());
-        statistics.setMaximum(ExtremumCalculator.calculate(this.ticks, max));
-        statistics.setMinimum(ExtremumCalculator.calculate(this.ticks, min));
-        statistics.setCount(Long.valueOf(this.ticks.size()));
-        statistics.setAverage(AverageCalculators.calculate(this.ticks));
-        statistics.setVolatility(Math.sqrt(PositionIndependentAverageCalculator.calculate(this.ticks, sqr) - statistics.getAverage() * statistics.getAverage()));
-        statistics.setMaximalDrawdown(MaximalDrawdown.calculate(this.ticks));
-        statistics.setQuantile_5(QuantileCalculator.calculate(this.ticks, 0.05));
-        statistics.setTimeWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(this.ticks, timeAverage, average));
-        statistics.setTimeExponentiallyWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(this.ticks, exponentialDecay, average));
 
-        statisticsCache.put(0L , statistics);
+        statistics.setMaximum(ExtremumCalculator.calculate(ticks, max));
+        statistics.setMinimum(ExtremumCalculator.calculate(ticks, min));
+        statistics.setCount(Long.valueOf(ticks.size()));
+        statistics.setAverage(AverageCalculators.calculate(ticks));
+        statistics.setVolatility(Math.sqrt(PositionIndependentAverageCalculator.calculate(ticks, sqr) - statistics.getAverage() * statistics.getAverage()));
+        statistics.setMaximalDrawdown(MaximalDrawdown.calculate(ticks));
+        statistics.setQuantile_5(QuantileCalculator.calculate(ticks, 0.05));
+        statistics.setTimeWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(ticks, timeAverage, average));
+        statistics.setTimeExponentiallyWeightedAverage(WeightedGeneralizedAverageCalculator.calculate(ticks, exponentialDecay, average));
+        return statistics;
     }
 
     public ReentrantLock getMutex() {
@@ -111,5 +123,9 @@ public class Instrument {
 
     public Double getLambdaExponentialDecay() {
         return lambdaExponentialDecay;
+    }
+
+    public Long getTimeHorizon() {
+        return time_horizon;
     }
 }

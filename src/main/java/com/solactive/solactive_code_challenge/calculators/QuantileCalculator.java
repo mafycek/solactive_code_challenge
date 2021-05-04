@@ -24,6 +24,6 @@ public class QuantileCalculator extends GenericWindowCalculator {
             }
             actualPercentile += percentileIncrease;
         }
-        return null;
+        return Double.NaN;
     }
 }
