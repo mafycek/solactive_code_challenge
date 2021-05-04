@@ -1,7 +1,6 @@
 package com.solactive.solactive_code_challenge.models;
 
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
-import com.solactive.solactive_code_challenge.resrapi.TickResponse;
 import org.testng.internal.collections.Pair;
 
 import java.util.Map;
@@ -10,26 +9,21 @@ import java.util.TreeMap;
 public class StatisticsOfInstrument {
     TreeMap<Long, Double> ticks;
 
+    private Double lambdaExponentialDecay;
+
     private Double average = Double.NaN;
-
     private Double maximum = Double.NaN;
-
     private Double minimum = Double.NaN;
-
     private Double maximalDrawdown = Double.NaN;
-
     private Double volatility = Double.NaN;
-
     private Double quantile_5 = Double.NaN;
-
     private Pair<Double, Double> timeWeightedAverage = new Pair(0.0, 0.0);
-
     private Pair<Double, Double> timeExponentiallyWeightedAverage = new Pair(0.0, 0.0);
-
     private Long count = 0L;
 
-    StatisticsOfInstrument(TreeMap<Long, Double> ticks) {
+    StatisticsOfInstrument(TreeMap<Long, Double> ticks, Double lambdaExponentialDecay) {
         this.ticks = ticks;
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
     }
 
     public Pair<Double, Double> getTimeWeightedAverage() {
@@ -110,7 +104,7 @@ public class StatisticsOfInstrument {
         Map.Entry<Long, Double> lastEntry = this.ticks.lastEntry();
         Long timeWeight = (actualTimestamp - lastEntry.getKey());
         Double compensationToTimeWeightedAverage = timeWeight * lastEntry.getValue();
-        Double timeExponentialWeight = Math.exp(-TickResponse.getLambdaExponentialDecay()* timeWeight);
+        Double timeExponentialWeight = Math.exp(-getLambdaExponentialDecay()* timeWeight);
         Double compensationToTimeExponentialWeightedAverage = timeExponentialWeight * lastEntry.getValue();
 
         statistics.setAverage(average);
@@ -124,5 +118,9 @@ public class StatisticsOfInstrument {
         statistics.setTimeExponentiallyWeightedAverage((getTimeExponentiallyWeightedAverage().first()+compensationToTimeExponentialWeightedAverage) / (getTimeExponentiallyWeightedAverage().second()+timeExponentialWeight));
 
         return statistics;
+    }
+
+    public Double getLambdaExponentialDecay() {
+        return lambdaExponentialDecay;
     }
 }

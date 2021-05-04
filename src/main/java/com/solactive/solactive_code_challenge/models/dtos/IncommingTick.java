@@ -16,7 +16,6 @@ public class IncommingTick {
     }
 
     public Long getTimestamp() {
-
         return timestamp;
     }
 

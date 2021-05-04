@@ -2,7 +2,6 @@ package com.solactive.solactive_code_challenge.models;
 
 import com.solactive.solactive_code_challenge.calculators.*;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -12,10 +11,9 @@ public class Instrument {
 
     private ReentrantLock mutex = new ReentrantLock();
 
-    String name;
+    private String name;
 
-    @Value("${solactive.lambda}")
-    Double lambdaExponentialDecay;
+    private Double lambdaExponentialDecay;
 
     TreeMap<Long, Double> ticks = new TreeMap<Long, Double>();
 
@@ -87,7 +85,9 @@ public class Instrument {
             return Math.exp(-distance * this.lambdaExponentialDecay);
         };
 
-        StatisticsOfInstrument statistics = new StatisticsOfInstrument(ticks);
+        // add here history cache
+
+        StatisticsOfInstrument statistics = new StatisticsOfInstrument(ticks, getLambdaExponentialDecay());
         statistics.setMaximum(ExtremumCalculator.calculate(this.ticks, max));
         statistics.setMinimum(ExtremumCalculator.calculate(this.ticks, min));
         statistics.setCount(Long.valueOf(this.ticks.size()));
@@ -103,5 +103,13 @@ public class Instrument {
 
     public ReentrantLock getMutex() {
         return mutex;
+    }
+
+    public TreeMap<Long, Double> getTicks() {
+        return ticks;
+    }
+
+    public Double getLambdaExponentialDecay() {
+        return lambdaExponentialDecay;
     }
 }

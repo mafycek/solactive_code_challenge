@@ -2,7 +2,6 @@ package com.solactive.solactive_code_challenge.models;
 
 import com.solactive.solactive_code_challenge.models.dtos.IncommingTick;
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
-import com.solactive.solactive_code_challenge.resrapi.TickResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +9,14 @@ import java.util.Set;
 
 public class TickStorageContainer {
 
+    private Long time_horizon;
+    private Double lambdaExponentialDecay;
+
     Map<String, Instrument> dataTicks = new HashMap<String, Instrument>();
 
-    public TickStorageContainer() {
+    public TickStorageContainer(Long time_horizon, Double lambdaExponentialDecay) {
+        this.time_horizon = time_horizon;
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
     }
 
     public Boolean doExistInstrument(String instrumentId) {
@@ -23,8 +27,8 @@ public class TickStorageContainer {
         return dataTicks.get(instrumentId);
     }
 
-    public Instrument createNewInstrument(String instrumentId, Double lambdaExponentialDecay) {
-        Instrument instrument = new Instrument(instrumentId, lambdaExponentialDecay);
+    public Instrument createNewInstrument(String instrumentId) {
+        Instrument instrument = new Instrument(instrumentId, getLambdaExponentialDecay());
         dataTicks.put(instrumentId, instrument);
         return instrument;
     }
@@ -47,7 +51,7 @@ public class TickStorageContainer {
 
         } else {
             // create a new datastructure and add dataset
-            instrument = this.createNewInstrument(incommingTick.getInstrument(), TickResponse.getLambdaExponentialDecay());
+            instrument = this.createNewInstrument(incommingTick.getInstrument());
         }
 
         try {
@@ -57,12 +61,17 @@ public class TickStorageContainer {
             instrument.addTick(incommingTick.getTimestamp(), incommingTick.getPrice());
 
             // removing ticks older than time horizon
-            instrument.getTickInWindow(actualTimestamp, TickResponse.getTimeHorizon());
+            Map.Entry<Long, Double> lastEntry = instrument.getTicks().lastEntry();
+            instrument.getTickInWindow(lastEntry.getKey(), 600000L ); //TickResponse.time_horizon
 
             // trigger recalculation
             instrument.recalculationVariables();
         } finally {
             instrument.getMutex().unlock();
         }
+    }
+
+    public Double getLambdaExponentialDecay() {
+        return lambdaExponentialDecay;
     }
 }

@@ -26,9 +26,7 @@ class SolactiveCodeChallengeApplicationTests {
 
 	@Test
 	void singleTest() {
-		this.tickResponse = new TickResponse();
-		TickResponse.setTimeHorizon(60000L);
-		TickResponse.setLambdaExponentialDecay(1.0);
+		this.tickResponse = new TickResponse(60000L, 1.0);
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
@@ -72,7 +70,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential1 = (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
@@ -99,7 +97,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential2 = (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 2.0) / (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + 1.0 );
+		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0 );
 		Double volatility = Math.sqrt(2.0/3.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getAverage()) == 0, "Average");
@@ -115,9 +113,7 @@ class SolactiveCodeChallengeApplicationTests {
 
 	@Test
 	void reverseOrderTest() {
-		this.tickResponse = new TickResponse();
-		TickResponse.setTimeHorizon(60000L);
-		TickResponse.setLambdaExponentialDecay(1.0);
+		this.tickResponse = new TickResponse(60000L, 1.0);
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
@@ -129,38 +125,8 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential1 = (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp+1);
-		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
-		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
-		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
-		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getMinimum()) == 0, "Minimum");
-		Assert.isTrue(Double.compare(1.05, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
-		Assert.isTrue(Double.compare(timeExponential1, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
-		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
-		Assert.isTrue(Double.compare(0.5, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
-		Assert.isTrue(2L == instrumentStatisticsABC.getCount(), "Count");
-	}
-
-	@Test
-	void timeManipulationTest() {
-		this.tickResponse = new TickResponse();
-		TickResponse.setTimeHorizon(60000L);
-		TickResponse.setLambdaExponentialDecay(1.0);
-
-		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
-
-		Long actualTimestamp = System.currentTimeMillis();
-		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
-
-		actualTimestamp += 1;
-		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
-
-		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
-
-		Double timeExponential1 = (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + 1.0);
 		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
 		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
@@ -175,7 +141,52 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential2 = (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-TickResponse.getLambdaExponentialDecay() * 2) * 2.0) / (Math.exp(-TickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-TickResponse.getLambdaExponentialDecay() * 2) + 1.0 );
+		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0 );
+		Double volatility = Math.sqrt(2.0/3.0);
+		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
+		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getAverage()) == 0, "Average");
+		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
+		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
+		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMinimum()) == 0, "Minimum");
+		Assert.isTrue(Double.compare(0.1, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
+		Assert.isTrue(Double.compare(timeExponential2, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(volatility, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
+		Assert.isTrue(3L == instrumentStatisticsABC.getCount(), "Count");
+	}
+
+	@Test
+	void timeManipulationTest() {
+		this.tickResponse = new TickResponse(60000L, 1.0);
+
+		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
+
+		Long actualTimestamp = System.currentTimeMillis();
+		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
+		this.tickResponse.processTick(incommingTick);
+
+		actualTimestamp += 1;
+		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
+		this.tickResponse.processTick(incommingTick);
+
+		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
+
+		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
+		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
+		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
+		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getMinimum()) == 0, "Minimum");
+		Assert.isTrue(Double.compare(1.05, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
+		Assert.isTrue(Double.compare(timeExponential1, instrumentStatisticsABC.getTimeExponentiallyWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getTimeWeightedAverage()) == 0, "Time weighted average");
+		Assert.isTrue(Double.compare(0.5, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
+		Assert.isTrue(2L == instrumentStatisticsABC.getCount(), "Count");
+
+		actualTimestamp += 2;
+		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
+		this.tickResponse.processTick(incommingTick);
+
+		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 2) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 2) + 1.0 );
 		Double timeAverage2 = (5.0) / (3.0);
 		Double volatility = Math.sqrt(2.0/3.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);

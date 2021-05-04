@@ -20,14 +20,20 @@ import java.util.ArrayList;
 public class TickResponse {
     private TickStorageContainer tickStorageContainer;
 
-    @Value("${solactive.time_horizon:60000}")
-    static private Long time_horizon;
+    @Value("${solactive.time_horizon}")
+    public Long time_horizon;
 
-    @Value("${solactive.lambda:1}")
-    static private Double lambdaExponentialDecay;
+    @Value("${solactive.lambda}")
+    private Double lambdaExponentialDecay;
 
     public TickResponse() {
-        this.tickStorageContainer = new TickStorageContainer();
+        this.tickStorageContainer = new TickStorageContainer(this.time_horizon, this.lambdaExponentialDecay);
+    }
+
+    public TickResponse(Long time_horizon, Double lambdaExponentialDecay) {
+        this.time_horizon = time_horizon;
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
+        this.tickStorageContainer = new TickStorageContainer(time_horizon, lambdaExponentialDecay);
     }
 
     @PostMapping("/ticks")
@@ -75,20 +81,20 @@ public class TickResponse {
         return statistics;
     }
 
-    static public void setTimeHorizon(Long time_horizon) {
-        TickResponse.time_horizon = time_horizon;
+    public void setTimeHorizon(Long time_horizon) {
+        this.time_horizon = time_horizon;
     }
 
-    static public Long getTimeHorizon() {
+    public Long getTimeHorizon() {
         return time_horizon;
     }
 
-    static public Double getLambdaExponentialDecay() {
+    public Double getLambdaExponentialDecay() {
         return lambdaExponentialDecay;
     }
 
-    static public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
-        TickResponse.lambdaExponentialDecay = lambdaExponentialDecay;
+    public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
     }
 
     public TickStorageContainer getTickStorageContainer() {
