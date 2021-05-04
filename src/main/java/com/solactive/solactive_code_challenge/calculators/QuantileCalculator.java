@@ -1,17 +1,16 @@
 package com.solactive.solactive_code_challenge.calculators;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class QuantileCalculator extends GenericWindowCalculator {
 
     public static Double calculate(Map<Long, Double> ticks, Double percentile) {
-        Collection<Double> values = ticks.values();
+        ArrayList<Double> values = new ArrayList(ticks.values());
+        Collections.sort(values);
         Double percentileIncrease = 1.0 / (ticks.size() - 1);
         Double actualPercentile = 0.0;
         if (values.size() == 1) {
-            return (Double) values.toArray()[0];
+            return values.get(0);
         }
 
         for (Iterator<Double> it = values.iterator(); it.hasNext(); ) {

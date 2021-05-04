@@ -1,11 +1,13 @@
 package com.solactive.solactive_code_challenge.calculators;
 
+import org.testng.internal.collections.Pair;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 public class WeightedGeneralizedAverageCalculator extends GenericWindowCalculator {
 
-    public static Double calculate(TreeMap<Long, Double> ticks, LongWeightFunc weightFunction, SingleArgumentFunc averageFunc) {
+    public static Pair calculate(TreeMap<Long, Double> ticks, LongWeightFunc weightFunction, SingleArgumentFunc averageFunc) {
         Double average = 0.0;
         Double sumWeights = 0.0;
         for(Map.Entry<Long, Double> entry: ticks.entrySet()) {
@@ -16,6 +18,6 @@ public class WeightedGeneralizedAverageCalculator extends GenericWindowCalculato
                 average += averageFunc.function(entry.getValue()) * weight;
             }
         }
-        return average / sumWeights;
+        return new Pair(average, sumWeights);
     }
 }

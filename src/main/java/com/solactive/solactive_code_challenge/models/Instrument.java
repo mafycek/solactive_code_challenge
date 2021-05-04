@@ -25,8 +25,8 @@ public class Instrument {
         try {
             this.getMutex().lock();
 
-            Map.Entry<Long, StatisticsOfInstrument> previousEntry = this.statisticsCache.lowerEntry(actualTimestamp);
-            InstrumentStatistics statistics = previousEntry.getValue().getStatistics();
+            Map.Entry<Long, StatisticsOfInstrument> previousEntry = this.statisticsCache.floorEntry(actualTimestamp);
+            InstrumentStatistics statistics = previousEntry.getValue().getStatistics(actualTimestamp);
             statistics.setInstrument(name);
 
             return statistics;
@@ -87,7 +87,7 @@ public class Instrument {
             return Math.exp(-distance * this.lambdaExponentialDecay);
         };
 
-        StatisticsOfInstrument statistics = new StatisticsOfInstrument();
+        StatisticsOfInstrument statistics = new StatisticsOfInstrument(ticks);
         statistics.setMaximum(ExtremumCalculator.calculate(this.ticks, max));
         statistics.setMinimum(ExtremumCalculator.calculate(this.ticks, min));
         statistics.setCount(Long.valueOf(this.ticks.size()));

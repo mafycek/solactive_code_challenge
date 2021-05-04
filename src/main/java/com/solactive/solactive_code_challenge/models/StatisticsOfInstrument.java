@@ -1,8 +1,15 @@
 package com.solactive.solactive_code_challenge.models;
 
 import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
+import com.solactive.solactive_code_challenge.resrapi.TickResponse;
+import org.testng.internal.collections.Pair;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 public class StatisticsOfInstrument {
+    TreeMap<Long, Double> ticks;
+
     private Double average = Double.NaN;
 
     private Double maximum = Double.NaN;
@@ -15,16 +22,17 @@ public class StatisticsOfInstrument {
 
     private Double quantile_5 = Double.NaN;
 
-    private Double timeWeightedAverage = Double.NaN;
+    private Pair<Double, Double> timeWeightedAverage = new Pair(0.0, 0.0);
 
-    private Double timeExponentiallyWeightedAverage = Double.NaN;
+    private Pair<Double, Double> timeExponentiallyWeightedAverage = new Pair(0.0, 0.0);
 
     private Long count = 0L;
 
-    StatisticsOfInstrument() {
+    StatisticsOfInstrument(TreeMap<Long, Double> ticks) {
+        this.ticks = ticks;
     }
 
-    public Double getTimeWeightedAverage() {
+    public Pair<Double, Double> getTimeWeightedAverage() {
         return timeWeightedAverage;
     }
 
@@ -36,7 +44,7 @@ public class StatisticsOfInstrument {
         return volatility;
     }
 
-    public Double getTimeExponentiallyWeightedAverage() {
+    public Pair<Double, Double> getTimeExponentiallyWeightedAverage() {
         return timeExponentiallyWeightedAverage;
     }
 
@@ -64,11 +72,11 @@ public class StatisticsOfInstrument {
         this.volatility = volatility;
     }
 
-    public void setTimeWeightedAverage(Double timeWeightedAverage) {
+    public void setTimeWeightedAverage(Pair timeWeightedAverage) {
         this.timeWeightedAverage = timeWeightedAverage;
     }
 
-    public void setTimeExponentiallyWeightedAverage(Double timeExponentiallyWeightedAverage) {
+    public void setTimeExponentiallyWeightedAverage(Pair timeExponentiallyWeightedAverage) {
         this.timeExponentiallyWeightedAverage = timeExponentiallyWeightedAverage;
     }
 
@@ -96,8 +104,14 @@ public class StatisticsOfInstrument {
         this.quantile_5 = quantile_5;
     }
 
-    InstrumentStatistics getStatistics() {
+    InstrumentStatistics getStatistics(Long actualTimestamp) {
         InstrumentStatistics statistics = new InstrumentStatistics();
+
+        Map.Entry<Long, Double> lastEntry = this.ticks.lastEntry();
+        Long timeWeight = (actualTimestamp - lastEntry.getKey());
+        Double compensationToTimeWeightedAverage = timeWeight * lastEntry.getValue();
+        Double timeExponentialWeight = Math.exp(-TickResponse.getLambdaExponentialDecay()* timeWeight);
+        Double compensationToTimeExponentialWeightedAverage = timeExponentialWeight * lastEntry.getValue();
 
         statistics.setAverage(average);
         statistics.setCount(count);
@@ -106,8 +120,8 @@ public class StatisticsOfInstrument {
         statistics.setQuantile_5(quantile_5);
         statistics.setVolatility(volatility);
         statistics.setMaximalDrawdown(maximalDrawdown);
-        statistics.setTimeWeightedAverage(timeWeightedAverage);
-        statistics.setTimeExponentiallyWeightedAverage(timeExponentiallyWeightedAverage);
+        statistics.setTimeWeightedAverage((getTimeWeightedAverage().first()+compensationToTimeWeightedAverage) / (getTimeWeightedAverage().second()+timeWeight));
+        statistics.setTimeExponentiallyWeightedAverage((getTimeExponentiallyWeightedAverage().first()+compensationToTimeExponentialWeightedAverage) / (getTimeExponentiallyWeightedAverage().second()+timeExponentialWeight));
 
         return statistics;
     }

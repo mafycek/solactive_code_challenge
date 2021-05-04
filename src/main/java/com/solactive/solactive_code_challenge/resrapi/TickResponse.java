@@ -18,49 +18,26 @@ import java.util.ArrayList;
 @RestController
 @RequestMapping("/")
 public class TickResponse {
+    private TickStorageContainer tickStorageContainer;
+
     @Value("${solactive.time_horizon:60000}")
-    private Long time_horizon;
+    static private Long time_horizon;
 
     @Value("${solactive.lambda:1}")
-    private Double lambdaExponentialDecay;
-
-    TickStorageContainer tickStorageContainer;
+    static private Double lambdaExponentialDecay;
 
     public TickResponse() {
         this.tickStorageContainer = new TickStorageContainer();
     }
 
-
     @PostMapping("/ticks")
     public ResponseEntity<String> processTick(@RequestBody IncommingTick incommingTick) {
         // actual timestamp
         Long actualTimestamp = System.currentTimeMillis();
-        if (actualTimestamp - incommingTick.getTimestamp() < time_horizon) {
+
+        if (actualTimestamp - incommingTick.getTimestamp() < getTimeHorizon()) {
             // incomming tick can be accepted
-            Instrument instrument;
-            if (this.tickStorageContainer.doExistInstrument(incommingTick.getInstrument())) {
-                // search for existing datastructure
-                instrument = this.tickStorageContainer.getInstrument(incommingTick.getInstrument());
-
-            } else {
-                // create a new datastructure and add dataset
-                instrument = this.tickStorageContainer.createNewInstrument(incommingTick.getInstrument(), this.lambdaExponentialDecay);
-            }
-
-            try {
-                // lock operation on the instance
-                instrument.getMutex().lock();
-
-                instrument.addTick(incommingTick.getTimestamp(), incommingTick.getPrice());
-
-                // removing ticks older than time horizon
-                instrument.getTickInWindow(actualTimestamp, time_horizon);
-
-                // trigger recalculation
-                instrument.recalculationVariables();
-            } finally {
-                instrument.getMutex().unlock();
-            }
+            this.tickStorageContainer.AddTick(incommingTick, actualTimestamp);
 
             return new ResponseEntity<>("Tick added.", HttpStatus.CREATED);
         } else {
@@ -76,9 +53,7 @@ public class TickResponse {
 
         if (this.tickStorageContainer.doExistInstrument(instrumentId)) {
             // instrument exists in datastructure
-            Instrument instrument = this.tickStorageContainer.getInstrument(instrumentId);
-            InstrumentStatistics statistics = instrument.getStatistics(actualTimestamp);
-            return statistics;
+            return this.tickStorageContainer.DeliverStatistics(instrumentId, actualTimestamp);
         } else {
             // instrument does not exist in datastructure
             InstrumentStatistics statistics = new InstrumentStatistics();
@@ -100,20 +75,23 @@ public class TickResponse {
         return statistics;
     }
 
-    public void setTimeHorizon(Long time_horizon) {
-        this.time_horizon = time_horizon;
+    static public void setTimeHorizon(Long time_horizon) {
+        TickResponse.time_horizon = time_horizon;
     }
 
-    public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
-        this.lambdaExponentialDecay = lambdaExponentialDecay;
-    }
-
-    public Long getTimeHorizon() {
+    static public Long getTimeHorizon() {
         return time_horizon;
     }
 
-    public Double getLambdaExponentialDecay() {
+    static public Double getLambdaExponentialDecay() {
         return lambdaExponentialDecay;
     }
 
+    static public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
+        TickResponse.lambdaExponentialDecay = lambdaExponentialDecay;
+    }
+
+    public TickStorageContainer getTickStorageContainer() {
+        return tickStorageContainer;
+    }
 }
