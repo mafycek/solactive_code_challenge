@@ -5,27 +5,31 @@ import com.solactive.solactive_code_challenge.models.dtos.InstrumentStatistics;
 import com.solactive.solactive_code_challenge.resrapi.TickResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 
-//#@RunWith(SpringRunner.class )
+
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
 class SolactiveCodeChallengeApplicationTests {
 
-	@Autowired
 	TickResponse tickResponse;
 
-	@BeforeClass
+	TickResponse tickResponse2;
+
+	@BeforeTest
 	public void testSetup() {
 	}
 
 	@Test
 	void singleTest() {
-		this.tickResponse = new TickResponse(60000L, 1.0);
+		this.tickResponse = new TickResponse();
+		this.tickResponse.setVariables(60000L, 1.0);
+		this.tickResponse.getTickStorageContainer().DeleteTicks();
+
+		Double lambda = this.tickResponse.getTickStorageContainer().getLambdaExponentialDecay();
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
@@ -69,7 +73,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential1 = (Math.exp(-lambda * 1) * 1 + 2.0) / (Math.exp(-lambda * 1) + 1.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
@@ -96,7 +100,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential2 = (Math.exp(-lambda * 1) * 1.0 + Math.exp(-lambda * 1) * 2.0) / (Math.exp(-lambda * 1) + Math.exp(-lambda * 1) + 1.0);
 		Double volatility = Math.sqrt(2.0 / 3.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getAverage()) == 0, "Average");
@@ -112,7 +116,11 @@ class SolactiveCodeChallengeApplicationTests {
 
 	@Test
 	void reverseOrderTest() {
-		this.tickResponse = new TickResponse(60000L, 1.0);
+		this.tickResponse = new TickResponse();
+		this.tickResponse.setVariables(60000L, 1.0);
+		this.tickResponse.getTickStorageContainer().DeleteTicks();
+
+		Double lambda = this.tickResponse.getTickStorageContainer().getLambdaExponentialDecay();
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
@@ -124,7 +132,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential1 = (Math.exp(-lambda * 1) * 1 + 2.0) / (Math.exp(-lambda * 1) + 1.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp + 1);
 		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
@@ -140,7 +148,7 @@ class SolactiveCodeChallengeApplicationTests {
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
 		this.tickResponse.processTick(incommingTick);
 
-		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential2 = (Math.exp(-lambda * 1) * 1.0 + Math.exp(-lambda * 1) * 2.0) / (Math.exp(-lambda * 1) + Math.exp(-lambda * 1) + 1.0);
 		Double volatility = Math.sqrt(2.0 / 3.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 		Assert.isTrue(Double.compare(1.0, instrumentStatisticsABC.getAverage()) == 0, "Average");
@@ -156,21 +164,24 @@ class SolactiveCodeChallengeApplicationTests {
 
 	@Test
 	void timeManipulationTest() {
-		this.tickResponse = new TickResponse(60000L, 1.0);
+		this.tickResponse = new TickResponse();
+		this.tickResponse.setVariables(60000L, 1.0);
+		this.tickResponse.getTickStorageContainer().DeleteTicks();
+		Double lambda = this.tickResponse.getTickStorageContainer().getLambdaExponentialDecay();
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
 		Long actualTimestamp = System.currentTimeMillis();
 		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
 		actualTimestamp += 1;
 		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
 
-		Double timeExponential1 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1 + 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + 1.0);
+		Double timeExponential1 = (Math.exp(-lambda * 1) * 1 + 2.0) / (Math.exp(-lambda * 1) + 1.0);
 		Assert.isTrue(Double.compare(1.5, instrumentStatisticsABC.getAverage()) == 0, "Average");
 		Assert.isTrue(Double.compare(0.0, instrumentStatisticsABC.getMaximalDrawdown()) == 0, "Maximal drawdown");
 		Assert.isTrue(Double.compare(2.0, instrumentStatisticsABC.getMaximum()) == 0, "Maximum");
@@ -183,9 +194,9 @@ class SolactiveCodeChallengeApplicationTests {
 
 		actualTimestamp += 2;
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
-		Double timeExponential2 = (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) * 1.0 + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 2) * 2.0) / (Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 1) + Math.exp(-this.tickResponse.getLambdaExponentialDecay() * 2) + 1.0);
+		Double timeExponential2 = (Math.exp(-lambda * 1) * 1.0 + Math.exp(-lambda * 2) * 2.0) / (Math.exp(-lambda * 1) + Math.exp(-lambda * 2) + 1.0);
 		Double timeAverage2 = (5.0) / (3.0);
 		Double volatility = Math.sqrt(2.0 / 3.0);
 		instrumentStatisticsABC = this.tickResponse.getTickStorageContainer().DeliverStatistics("ABC", actualTimestamp);
@@ -202,22 +213,24 @@ class SolactiveCodeChallengeApplicationTests {
 
 	@Test
 	void timeMoveTest() {
+		this.tickResponse = new TickResponse();
+		this.tickResponse.setVariables(60000L, 1.0);
+		this.tickResponse.getTickStorageContainer().DeleteTicks();
 		Long slideWindow = 60000L;
-		this.tickResponse = new TickResponse(slideWindow, 1.0);
 
 		InstrumentStatistics instrumentStatisticsABC = this.tickResponse.statistics("ABC");
 
 		Long actualTimestamp = System.currentTimeMillis();
 		IncommingTick incommingTick = new IncommingTick("ABC", 1.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
 		actualTimestamp += 1;
 		incommingTick = new IncommingTick("ABC", 2.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
 		actualTimestamp += 1;
 		incommingTick = new IncommingTick("ABC", 0.0, actualTimestamp);
-		this.tickResponse.processTick(incommingTick);
+		this.tickResponse.getTickStorageContainer().AddTickSync(incommingTick, actualTimestamp);
 
 		for (Long count = 0L; count < slideWindow - 1; count++) {
 			Double volatility = Math.sqrt(2.0 / 3.0);
@@ -259,6 +272,5 @@ class SolactiveCodeChallengeApplicationTests {
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getQuantile_5()) == 0, "Quantile");
 		Assert.isTrue(Double.compare(Double.NaN, instrumentStatisticsABC.getVolatility()) == 0, "Volatility");
 		Assert.isTrue(0L == instrumentStatisticsABC.getCount(), "Count");
-
 	}
 }

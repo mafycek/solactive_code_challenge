@@ -28,6 +28,10 @@ public class TickStorageContainer {
     public TickStorageContainer() {
     }
 
+    public void DeleteTicks() {
+        Map<String, Instrument> dataTicks = new HashMap<String, Instrument>();
+    }
+
     public Boolean doExistInstrument(String instrumentId) {
         return dataTicks.containsKey(instrumentId);
     }
@@ -52,8 +56,7 @@ public class TickStorageContainer {
         return statistics;
     }
 
-    @Async("threadPoolTaskExecutor")
-    public void AddTick(IncommingTick incommingTick, Long actualTimestamp) {
+    public void AddTickSync(IncommingTick incommingTick, Long actualTimestamp) {
         Instrument instrument;
         LOG.debug("Adding new tick {}", incommingTick.getInstrument());
 
@@ -81,6 +84,11 @@ public class TickStorageContainer {
         } finally {
             instrument.getMutex().unlock();
         }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public void AddTick(IncommingTick incommingTick, Long actualTimestamp) {
+        this.AddTickSync(incommingTick, actualTimestamp);
     }
 
     public InstrumentStatistics ProcessSingleStatistics(String instrumentId) {
@@ -120,5 +128,13 @@ public class TickStorageContainer {
 
     public Long getTimeHorizon() {
         return this.time_horizon;
+    }
+
+    public void setLambdaExponentialDecay(Double lambdaExponentialDecay) {
+        this.lambdaExponentialDecay = lambdaExponentialDecay;
+    }
+
+    public void setTimeHorizon(Long time_horizon) {
+        this.time_horizon = time_horizon;
     }
 }

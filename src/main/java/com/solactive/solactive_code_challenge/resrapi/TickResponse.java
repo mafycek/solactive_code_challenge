@@ -17,6 +17,15 @@ public class TickResponse {
     @Autowired
     private TickStorageContainer tickStorageContainer;
 
+    public TickResponse () {
+    }
+
+    public void setVariables(Long time_horizon, Double lambdaExponentialDecay) {
+        this.tickStorageContainer = new TickStorageContainer();
+        this.tickStorageContainer.setTimeHorizon(time_horizon);
+        this.tickStorageContainer.setLambdaExponentialDecay(lambdaExponentialDecay);
+    }
+
     @PostMapping("/ticks")
     public ResponseEntity<String> processTick(@RequestBody IncommingTick incommingTick) {
         // actual timestamp
