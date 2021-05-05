@@ -20,6 +20,11 @@ To execute the server on local machine on port 8080, please, use:
 To run tests of the application, please, use
 `./gradlew test`
 
+I prepared a Python test utility that sends number of ticks to the interface and requests statistics.
+
+### Assumptions of the solution
+During execution of the interface I assume only single threaded /statistics end-points.
+
 ### Possible improvements
 * Implementation of the Bessel correction to the volatility calculation
 * Use shared locks instead standard locks to improve performance of the solution
@@ -27,3 +32,7 @@ To run tests of the application, please, use
 * Improvement of the calculation statistics to update only exposed values
 * Complex testing of the calculation of statistics
 * Encapsulate solution in a Docker image
+* Python test utility needs reasonable virtual environment
+
+### Conclusions
+The code challenge is really challenge that proves and tests ability to learn new technologies hand in hand with exploiting actual knowledge.  
