@@ -15,10 +15,10 @@ The first end-point allows to consume ticks obtained from external source. Later
 The application uses Gradle as a build tool to build and run.
 
 To execute the server on local machine on port 8080, please, use:
-./gradlew bootRun
+`./gradlew bootRun`
 
 To run tests of the application, please, use
-./gradlew test
+`./gradlew test`
 
 ### Possible improvements
 * Implementation of the Bessel correction to the volatility calculation
@@ -26,3 +26,4 @@ To run tests of the application, please, use
 * Calculation of the average of time exponential decay can be calculated using arbitrary precision numbers to prevent under flow or overflow of standard Double type when calculated arguments *ARG* of exponential functions |*ARG*| > 700
 * Improvement of the calculation statistics to update only exposed values
 * Complex testing of the calculation of statistics
+* Encapsulate solution in a Docker image

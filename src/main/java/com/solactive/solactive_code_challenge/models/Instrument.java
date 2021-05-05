@@ -41,12 +41,7 @@ public class Instrument {
     }
 
     public void getTickInWindow(Long actualTime, Long window) {
-        for(Map.Entry<Long, Double> entry : this.ticks.entrySet()) {
-            if (actualTime - entry.getKey() > window) {
-                // remove keys outside of the window
-                this.ticks.remove(entry.getKey());
-            }
-        }
+        this.ticks = new TreeMap<Long, Double>(this.ticks.tailMap(actualTime-window));
     }
 
     public void recalculationVariables() {
